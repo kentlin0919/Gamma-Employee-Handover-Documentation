@@ -51,6 +51,14 @@
   *   **VPN Gateway**: 用於建立安全的管理者點對站 (P2S) 連線。
   *   **網路安全群組 (NSG)**: `ap1-nsg` 與 `ap2-nsg` 預設拒絕所有公網流量，僅允許 AppGW 之內網轉發。
 
+### 2.1 CMUA 虛擬網路建立與設定指引
+
+`CMU Alliance` 專案的虛擬網路設定流程已獨立整理成作業文件。由於較早期文件曾使用 `weigong` 作為示意命名，但目前 `CMUA` 實際環境已改為 `cmua` 系列資源，後續建立或調整 VNet / Subnet 時，請以現場既有 `cmua` 網路資源為準，不要另外新建一套 `weigong` 命名的網路。
+
+詳細建立步驟、子網路規劃、Private DNS / Private Endpoint 檢查與驗證流程，請直接參閱：
+
+👉 **[Azure 虛擬網路建立與設定指南 (CMUA)](./procedures/AZURE_VNET_SETUP_GUIDE.md)**
+
 ## 3. 受管服務設定
 
 *   **Azure SQL Server: weigong**:
@@ -180,28 +188,17 @@ flowchart TD
 
 👉 **[Azure SQL Database 建立步驟教學](./procedures/AZURE_SQL_SETUP_GUIDE.md)**
 
-## 9. 虛擬機器 (VM) 關鍵設定指引 (Project: weigong)
+## 9. 虛擬機器 (VM) 建立與配置指引 (Project: CMUA)
 
-為了確保系統安全性與連線穩定性，在配置 `ap1` 與 `ap2` 虛擬機器時，必須嚴格遵守以下設定：
+`CMU Alliance` 專案的 VM 建置流程已獨立整理成作業文件，內容以目前可確認的 `cmua` 規格為基準，包括：
 
-### 9.1 網路設定 (Networking)
-*   **虛擬網路**: 選擇 `weigong`。
-*   **子網路**: 選擇 `BackendSubnet`。
-*   **公用 IP (Public IP)**: **無 (None)**。
-    *   *說明*: 所有外部流量應透過 Application Gateway 進入，維護則經由 VPN，嚴禁直接暴露 VM 於公網。
-*   **NIC 安全群組**: 選取對應的 `ap1-nsg` 或 `ap2-nsg`。
+* `Resource group`：`cmua-cmu`
+* `VM naming`：`ap1` / `ap2`
+* `Subnet`：`BackendSubnet`
+* `Public IP`：`None`
+* `NIC NSG`：`ap1-nsg` / `ap2-nsg`
+* `SQL private connectivity`：需能私網連到 `cmua-cmu-db`
 
-**設定參考畫面：**
-![Azure VM Networking Tab Configuration](https://learn.microsoft.com/en-us/azure/virtual-machines/windows/media/quick-create-portal/networking-tab.png)
+詳細建立步驟、欄位填寫原則與參考擷圖，請直接參閱：
 
-### 9.2 管理與身分識別 (Management & Identity)
-*   **受管理識別 (Managed Identity)**: **啟用「系統中心指派身分 (System assigned)」**。
-    *   *重要性*: 這是伺服器存取 Key Vault 與 Azure SQL 的身分憑據，可實現「免密碼」的安全認證。
-*   **自動關機 (Auto-shutdown)**: 視環境需求設定（開發環境強烈建議開啟以節省成本）。
-
-**設定參考畫面：**
-![Azure VM Managed Identity Configuration](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/media/how-to-configure-managed-identities/enable-system-assigned-identity.png)
-
-### 9.3 監控與診斷 (Monitoring & Diagnostics)
-*   **啟動診斷 (Boot diagnostics)**: 確保開啟。在網路斷線時，此為排查開機故障的主要依據。
-*   **代理程式安裝**: 需於 VM 中安裝 Log Analytics Agent，以將 OS 日誌匯流至中央監控中心。
+👉 **[Azure VM 建立與配置指南 (CMUA)](./procedures/AZURE_VM_SETUP_GUIDE.md)**
