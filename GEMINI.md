@@ -4,6 +4,9 @@
 
 ## 請先使用網路搜尋相關知識後再分析
 
+## 截圖處理規範
+*   下載後並已引入專案的擷圖，應從原始下載資料夾中移除，以維持環境整潔。
+
 ## Project Overview
 
 This repository, **Gamma-Employee-Handover-Documentation (嘉鈊科技交接文件)**, serves as a central hub for storing and organizing documentation related to various projects within Gamma (嘉鈊科技). Its primary purpose is to facilitate a smooth handover process for employees by providing essential information, configurations, and knowledge about the company's technical infrastructure and software projects.
@@ -15,6 +18,7 @@ The project is currently in its early stages, with a directory structure designe
 *   **03-recycling-3c91:** Documentation for the 3C91 recycling project.
 *   **04-others:** Miscellaneous documentation and other smaller projects.
 *   **05-tools-rd:** Information and tools related to research and development.
+*   **06-cmu-alliance:** Cloud infrastructure and documentation for the CMU Alliance projects.
 
 ## Directory Structure
 

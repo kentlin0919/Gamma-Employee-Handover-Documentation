@@ -28,13 +28,16 @@
 *   **核心內容**：3C91 回收自動化、計價引擎邏輯、訂單狀態流轉。
 *   **數據分析**：數據儀表板統計條件與資料庫 Schema。
 
+### 🏥 [06-cmu-alliance (中醫大聯盟)](./projects/06-cmu-alliance/README.md)
+*   **核心內容**: Azure 雲端資源管理、為恭醫院/總院系統架構、SQL Elastic Pool 配置。
+*   **關鍵技術**: Azure Infrastructure as Code (實務指南), Private Link 安全隔離。
+
 ### 🧩 [04-others (跨專案支援)](./projects/04-others/README.md)
-*   **包含專案**：
-    - **GX-桃園E健康**：SSL 憑證、WebView 跑版修復。
-    - **為恭醫院**：初期開發環境建立。
-    - **瀚荃空氣偵測器2**：前端 APP 開發。
-    - **中華郵政物流園區**：AIoT 虛擬訊號測試。
-    - **永彰智慧辦公室**：Mail Server 告警系統。
+*   **包含專案**:
+    - **GX-桃園E健康**: SSL 憑證、WebView 跑版修復。
+    - **瀚荃空氣偵測器2**: 前端 APP 開發。
+    - **中華郵政物流園區**: AIoT 虛擬訊號測試。
+    - **永彰智慧辦公室**: Mail Server 告警系統。
 
 ### 🛠️ [05-tools-rd (研發工具)](./projects/05-tools-rd/README.md)
 *   **核心工具**：Gemini CLI 配置、Git Hooks 自動化檢查、App 自動部署 (Fastlane) 腳本。

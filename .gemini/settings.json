@@ -7,8 +7,11 @@
         "REDMINE_URL": "https://redmine.viuto-aiot.com/",
         "REDMINE_API_KEY": "ede72525c52bcab48631f4476df957ef9533f90a",
         "REDMINE_REQUEST_INSTRUCTIONS": "/Users/kent/project/Gamma-Employee-Handover-Documentation/.gemini/redmine_instructions_clean.md"
-      },
-      "trusted": true
+      }
+    },
+    "streamable-mcp-server": {
+      "type": "http",
+      "url": "http://127.0.0.1:12306/mcp"
     }
   }
 }
