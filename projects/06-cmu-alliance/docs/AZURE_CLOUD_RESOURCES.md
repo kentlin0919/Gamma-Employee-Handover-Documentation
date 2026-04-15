@@ -202,3 +202,20 @@ flowchart TD
 詳細建立步驟、欄位填寫原則與參考擷圖，請直接參閱：
 
 👉 **[Azure VM 建立與配置指南 (CMUA)](./procedures/AZURE_VM_SETUP_GUIDE.md)**
+
+## 10. Application Gateway (ALB) 建立與配置指引 (Project: CMUA)
+
+`CMU Alliance` 專案的 ALB 建置流程已獨立整理成作業文件，內容以 `cmua-cmu` 資源群組為基準，包括：
+
+* `Resource group`：`cmua-cmu`
+* `ALB Name`：`cmua-cmu-alb`
+* `Backend Pool`：包含 `cmua-cmu-ap1` / `cmua-cmu-ap2`
+* `Frontend IP`：`cmua-cmu-frontend-ip` (Public IP)
+* `Application Gateway subnet`：`appgw-subnet`，需為 ALB 專用子網路
+* `Subnet sizing`：依 Microsoft Learn 至少 `/27`，實務上建議預留 `/24`
+* `Public IP requirement`：`Standard` + `Static`
+
+詳細建立步驟、配置原則、健康檢查、驗證方式與官方文件截圖，請直接參閱：
+
+👉 **[Azure Application Gateway (ALB) 設定指南 (CMUA)](./procedures/AZURE_CMUA_ALB_SETUP_GUIDE.md)**
+
