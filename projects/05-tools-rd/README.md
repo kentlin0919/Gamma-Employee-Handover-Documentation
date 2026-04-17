@@ -7,6 +7,7 @@
 - **Gemini CLI Config**: 自動化文件生成與程式碼分析設定。
 - **Git Hooks**: 程式碼風格與 Commit 訊息檢查。
 - **自動化部署腳本**: 針對 Brymen APP 的打包與分發腳本。
+- **Go2RTC Streaming**: RTSP 轉 WebRTC 串流伺服器建置與 [Wowza 相容性說明](./docs/go2rtc-streaming-setup.md)。
 
 ## 3. 維護說明
 - **Gemini CLI**: 設定檔位於本倉庫的 `.gemini/` 目錄。
