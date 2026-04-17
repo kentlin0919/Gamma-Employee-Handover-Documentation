@@ -23,13 +23,13 @@
 *   **標準配置**: 2 vCPU, 4GB RAM, 32GB Disk, 預裝 `qemu-guest-agent`。
 *   **自動化**: 透過 Cloud-init 注入 SSH Key，嚴禁使用明文密碼。
 
-## 4. 備份與復原 (PBS)
-*   **備份排程**: 每日凌晨 02:00 執行增量備份。
-*   **保留政策**: 
-    *   Keep Daily: 7
-    *   Keep Weekly: 4
-    *   Keep Monthly: 1
-*   **復原測試**: 每季需執行一次關鍵 VM（如 K8s Master）的還原演練。
+## 4. 備份與復原 (Proxmox Backup Server, PBS)
+*   **備份方式**: 串接外部 PBS (Proxmox Backup Server) 進行高效能增量備份。
+*   **備份排程**: 每日凌晨 02:00 執行。
+*   **保留政策 (Prune Options)**: 
+    *   **Keep Last (保留最近次數)**: 3 天 (或 Keep Daily: 3)
+    *   定期清理過期備份以節省儲存空間。
+*   **復原測試**: 每季需執行一次關鍵 VM（如 K8s Master）的還原演練，確保 PBS 遠端掛載與傳輸正常。
 
 ## 5. 常用指令
 *   `qm status <vmid>`: 查看 VM 狀態。

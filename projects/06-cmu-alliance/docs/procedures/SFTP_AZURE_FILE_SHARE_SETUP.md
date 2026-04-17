@@ -2,6 +2,20 @@
 
 本文件定義「本機 SFTP → Windows VM → Azure File Share」架構的標準設定規範。為了確保 `ChrootDirectory` 穩定性與服務帳號存取權，統一採用**「SYSTEM 帳戶掛載 + 符號連結」**做法。
 
+---
+
+## 0. 前置作業：Azure Files 基礎設施建立
+
+在開始 SFTP 設定前，必須確保 Azure File Share 已經透過私人端點正確建立並掛載。
+
+- **完整建立流程**：請參考 [Azure Files SMB 私人端點掛載指南](./AZURE_FILE_SHARE_SETUP_GUIDE.md)。
+- **快速檢查清單**：
+    1.  確認 `Resolve-DnsName cmuacmu.file.core.windows.net` 回傳 **10.0.0.x**。
+    2.  確認 `cmdkey` 已存入 `Azure\cmuacmu` 認證。
+    3.  確認磁碟機 `Z:` 已成功掛載。
+
+---
+
 ## 1. 核心權限問題與限制
 
 在 Windows 上使用 OpenSSH (Win32-OpenSSH) 存取 Azure File Share 時，必須符合以下限制：

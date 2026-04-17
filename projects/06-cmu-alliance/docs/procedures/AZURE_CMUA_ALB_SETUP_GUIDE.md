@@ -2,39 +2,34 @@
 
 本文件提供 `cmua-cmu` 資源群組建立 Azure Application Gateway (ALB) 的可執行 SOP，適用於 `CMU Alliance` 專案目前的雙機應用架構。
 
-本版已依 `2026-04-14` 透過 Context7 查核 Microsoft Learn 官方文件後整理，重點對齊下列要求：
+本版已依 `2026-04-17` 透過實測截圖與 Microsoft Learn 官方文件整理，重點對齊下列要求：
 
-* `Application Gateway v2` 需要使用 **專用子網路**，不可與其他工作負載共用。
+* `Application Gateway v2` 需要使用 **專用子網路** (本專案命名為 `cmua-cmu-appgw-subnet`)。
 * `Standard v2` 搭配公網前端時，應使用 **Standard / Static Public IP**。
-* Application Gateway 子網路至少建議 `/27`，若考量 autoscaling 與後續維運，**建議 `/24`**。
+* Application Gateway 子網路至少建議 `/27`，本專案目前配置為 `/24`。
 
-## 1. 官方參考文件
+## 1. 架構概觀 (Overview)
 
-1. Microsoft Learn: [Application Gateway infrastructure configuration](https://learn.microsoft.com/en-us/azure/application-gateway/configuration-infrastructure)
-2. Microsoft Learn: [Quickstart - Direct web traffic with Azure Application Gateway - Azure portal](https://learn.microsoft.com/en-us/azure/application-gateway/quick-create-portal)
+以下截圖顯示了目前 `cmua-cmu-alb` 的運行狀態與基本資訊：
 
-以下截圖已存入專案 `assets/`，可作為交接時的視覺參考：
+![Azure ALB Overview - Portal](../../assets/azure-alb-overview-new.png)
 
-![Microsoft Learn - Application Gateway infrastructure configuration](../../assets/cmua-appgw-config-infra.png)
-
-![Microsoft Learn - Quickstart create application gateway in Azure portal](../../assets/cmua-appgw-quickstart-portal.png)
-
-## 2. 本專案目標配置
+## 2. 本專案目標配置 (Actual Configuration)
 
 | 項目 | 設定值 | 說明 |
 | :--- | :--- | :--- |
-| Subscription | 依現場實際訂閱 | 建議先確認是否為 CMUA 正式使用中的訂閱 |
+| Subscription | `260320 CSP` | 目前使用的訂閱 |
 | Resource Group | `cmua-cmu` | CMUA Azure 資源群組 |
 | Region | `Japan East` | 必須與既有網路與 VM 同區 |
 | Application Gateway 名稱 | `cmua-cmu-alb` | 專案標準命名 |
 | SKU / Tier | `Standard_v2` | 目前以 ALB 為目標，不含 WAF |
 | Virtual Network | `cmua-cmu-Network` | 既有 VNet |
-| ALB Subnet | `appgw-subnet` | ALB 專用子網路 |
+| ALB Subnet | `cmua-cmu-appgw-subnet` | ALB 專用子網路 |
 | Frontend Public IP | `cmua-cmu-frontend-ip` | `Standard` + `Static` |
-| Backend Pool | `cmua-cmu-ap-pool` | 目標 VM: `cmua-cmu-ap1`、`cmua-cmu-ap2` |
-| Backend Setting | `cmua-cmu-ap-setting` | 預設 HTTP，實際埠號依服務確認 |
-| Listener | `cmua-cmu-http-listener` | 初版先用 HTTP/80 |
-| Routing Rule | `cmua-cmu-routing-rule` | Basic rule |
+| Backend Pools | `web-pool`, `api-pool` | 目標 VM: `cmua-cmu-ap1`, `cmua-cmu-ap2` |
+| Backend Settings | `web-setting`, `api-setting` | 服務埠號: `60011` (Web), `60001` (API) |
+| Listeners | `web-listener`, `api-listener` | 分別監聽 `60011` 與 `60001` |
+| Routing Rules | `web-rule`, `api-rule` | 將對應流量導向各 Pool |
 
 ## 3. 前置確認
 
@@ -56,7 +51,9 @@
 1. 進入 Azure Portal。
 2. 搜尋並開啟 `cmua-cmu-Network`。
 3. 進入左側 `Subnets`。
-4. 確認是否已存在 `appgw-subnet`。
+4. 確認是否已存在 `cmua-cmu-appgw-subnet` (如下圖所示)。
+
+![Azure VNet Subnets](../../assets/azure-cmua-vnet-subnets.png)
 
 ### 4.2 建立子網路
 
@@ -64,9 +61,9 @@
 
 | 欄位 | 建議值 |
 | :--- | :--- |
-| Name | `appgw-subnet` |
-| Address range | 優先使用 `/24`，例如 `10.0.1.0/24` |
-| Network security group | 先沿用現場政策，避免自行加上過度限縮規則 |
+| Name | `cmua-cmu-appgw-subnet` |
+| Address range | `10.0.2.0/24` (依現場實際規劃) |
+| Network security group | 先保持預設，避免自行加上過度限縮規則 |
 | Route table / NAT gateway / service endpoint | 若無明確需求，先保持預設 |
 
 ### 4.3 子網路規劃原則
@@ -107,7 +104,7 @@
 | Tier | `Standard V2` |
 | Enable autoscaling | 建議開啟，Min instance 依現場容量需求 |
 | Virtual network | `cmua-cmu-Network` |
-| Subnet | `appgw-subnet` |
+| Subnet | `cmua-cmu-appgw-subnet` |
 | Frontend IP type | `Public` |
 | Public IP address | `cmua-cmu-frontend-ip` |
 
@@ -116,87 +113,88 @@
 
 ## 7. 建立 Backend Pool
 
-Application Gateway 建立完成後，進入 `Backend pools`：
+進入 `Backend pools`，依照不同服務建立集區：
 
+![Azure ALB Backend Pools](../../assets/azure-alb-backend-pools-new.png)
+
+### 7.1 Web Pool
 | 欄位 | 設定值 |
 | :--- | :--- |
-| Pool name | `cmua-cmu-ap-pool` |
-| Target type | `Virtual machine` |
-| Targets | `cmua-cmu-ap1`、`cmua-cmu-ap2` |
+| Pool name | `web-pool` |
+| Targets | `cmua-cmu-ap1` (10.0.0.4), `cmua-cmu-ap2` (10.0.0.5) |
+
+![Azure ALB Backend Pool Web](../../assets/azure-appgw-backend-pool-web.png)
+
+### 7.2 API Pool
+| 欄位 | 設定值 |
+| :--- | :--- |
+| Pool name | `api-pool` |
+| Targets | `cmua-cmu-ap1` (10.0.0.4), `cmua-cmu-ap2` (10.0.0.5) |
+
+![Azure ALB Backend Pool API](../../assets/azure-appgw-backend-pool-api.png)
 
 操作原則：
 
-* 若 Portal 可直接選 VM，優先使用 VM 綁定
-* 若現場改為 NIC / IP 方式管理，也可用 private IP 加入，但需同步記錄在本文件
+* 優先使用 VM 綁定以維持動態 IP 對應
+* 確認 Pool 已關聯至正確的 Routing rule (詳見第 10 節)
 
 ## 8. 建立 Backend Setting 與 Health Probe
 
-進入 `Backend settings`，新增：
+進入 `Backend settings`，配置 Web 與 API 的後端連線參數：
 
-| 欄位 | 設定值 |
-| :--- | :--- |
-| Name | `cmua-cmu-ap-setting` |
-| Backend protocol | `HTTP` |
-| Backend port | 依實際服務埠號，常見 `80` |
-| Cookie-based affinity | 依系統是否依賴 session sticky 決定，若未確認先 `Disabled` |
-| Connection draining | 視現場需求，可先關閉 |
-| Request timeout | `20` 秒起 |
-| Override with new host name | 若後端不是 host-based routing，通常不需開啟 |
+![Azure ALB Backend Settings](../../assets/azure-alb-backend-settings-new.png)
 
-Health Probe 建議同步建立，不要只依賴預設探查：
+### 8.1 關鍵配置說明
+| 項目 | Web (`web-setting`) | API (`api-setting`) |
+| :--- | :--- | :--- |
+| Backend protocol | `HTTP` | `HTTP` |
+| Backend port | `60011` | `60001` |
+| Cookie-based affinity | `Disabled` | `Disabled` |
+| Connection draining | `Enabled` (30s) | `Enabled` (30s) |
 
-| 欄位 | 建議值 |
-| :--- | :--- |
-| Probe name | `cmua-cmu-ap-probe` |
-| Protocol | `HTTP` |
-| Host | 依實際服務需求，若無特殊 host header 可留空或使用 `127.0.0.1` 對應模式 |
-| Path | 優先使用 `/health`，若應用沒有則改為能穩定回 `200` 的路徑 |
-| Interval | `30` 秒 |
-| Timeout | `30` 秒 |
-| Unhealthy threshold | `3` |
+![Azure ALB Health Probes](../../assets/azure-alb-health-probes-new.png)
+
+### 8.2 Health Probe (健康狀態探查)
+| 項目 | `web-probe` | `api-probe` |
+| :--- | :--- | :--- |
+| Path | `/` | `/health` (需確認非 401 路徑) |
+| Interval | 30s | 30s |
+| Unhealthy threshold | 3 | 3 |
 
 實務要求：
-
-* Probe 路徑必須能穩定回應 `200-399`
-* 若站台會對未登入使用者轉址，請勿直接拿登入頁作為 probe 路徑
-* 若後端使用 IIS / Kestrel / Nginx 反向代理，請先在 VM 上本機測過 probe path
+* Probe 路徑必須能在無須認證的情況下回傳 `200-399`。
+* 若 API 端口有 401 問題，請開發人員提供專用的 `/ping` 或 `/health` 端點。
 
 ## 9. 建立 Listener
 
-進入 `Listeners`，新增：
+進入 `Listeners`，配置前端監聽埠號：
 
-| 欄位 | 設定值 |
-| :--- | :--- |
-| Name | `cmua-cmu-http-listener` |
-| Frontend IP | `cmua-cmu-frontend-ip` |
-| Protocol | `HTTP` |
-| Port | `80` |
-| Listener type | `Basic` |
+![Azure ALB Listeners](../../assets/azure-alb-listeners-new.png)
+
+| 欄位 | Web (`web-listener`) | API (`api-listener`) |
+| :--- | :--- | :--- |
+| Frontend IP | `cmua-cmu-frontend-ip` | `cmua-cmu-frontend-ip` |
+| Protocol | `HTTP` | `HTTP` |
+| Port | `60011` | `60001` |
+| Listener type | `Basic` | `Basic` |
 
 備註：
-
-* 若要直接上正式環境，建議同步規劃 `HTTPS / 443`
-* 若後續掛憑證，請另建 `HTTPS listener`，不要直接覆蓋原設定後卻不記錄
+* 目前先行配置 HTTP 版本以利測試，正式環境應升級為 HTTPS 並配置憑證。
 
 ## 10. 建立 Routing Rule
 
-進入 `Rules`，新增 Basic rule：
+進入 `Rules`，將 Listener 與 Backend 進行綁定：
 
-| 欄位 | 設定值 |
-| :--- | :--- |
-| Rule name | `cmua-cmu-routing-rule` |
-| Priority | `100` 或依現場規劃 |
-| Listener | `cmua-cmu-http-listener` |
-| Backend target | `cmua-cmu-ap-pool` |
-| Backend settings | `cmua-cmu-ap-setting` |
+![Azure ALB Routing Rules](../../assets/azure-alb-rules-new.png)
 
-目前 `cmua-cmu` 先以單一站台導流為主，因此使用 `Basic` rule 即可。若未來需要：
+| 欄位 | Web (`web-rule`) | API (`api-rule`) |
+| :--- | :--- | :--- |
+| Priority | `100` | `110` |
+| Listener | `web-listener` | `api-listener` |
+| Backend target | `web-pool` | `api-pool` |
+| Backend settings | `web-setting` | `api-setting` |
 
-* API / Web 拆流
-* 多站台 host-based routing
-* HTTP to HTTPS redirect
-
-則再改用多 listener 與 path-based / redirect 規則。
+目前採用 `Basic` rule 以簡化初期配置。若未來需要 Path-based routing (例如同一 Listener 依 `/api` 導流)，再行調整。
 
 ## 11. 驗證流程
 
@@ -204,10 +202,10 @@ Health Probe 建議同步建立，不要只依賴預設探查：
 
 ### 11.1 Azure Portal 驗證
 
-* `Overview` 顯示 `Running`
-* `Backend health` 看到 `cmua-cmu-ap1`、`cmua-cmu-ap2` 為 `Healthy`
+* `Overview` 顯示 `Running` (參考第 1 節截圖)
+* `Backend health` 看到 `cmua-cmu-ap1`、`cmua-cmu-ap2` 在兩個 Pool 中皆為 `Healthy`
 * `Frontend public IP` 已綁定 `cmua-cmu-frontend-ip`
-* `Listener`、`Backend setting`、`Rule` 命名均符合本 SOP
+* `Listener`、`Backend setting`、`Rule` 命名均符合本 SOP (`web-*` / `api-*`)
 
 ### 11.2 應用驗證
 
@@ -310,8 +308,9 @@ Get-NetFirewallRule | Where-Object { $_.DisplayName -like "Allow 6000*" }
 
 ## 15. 待處理項目 (Pending Items)
 
-1. **Application Gateway Routing Rule**: `api` pool 目前無導流規則，需確認外部存取之路徑 (Path) 或端口 (Port)，以建立對應的 Listener 與 Rule。
-2. **Custom Health Probe for 60001**: 目前探查路徑會因 401 被拒絕，需在後端新增一個不需認證的 Endpoint (如 `/health`) 並更新 AGW Probe 設定。
+1. **HTTPS 升級**: 目前僅配置 HTTP。需待申請 SSL 憑證後，補強 HTTPS Listener (443) 並設定 Redirect 規則。
+2. **Web Application Firewall (WAF)**: 目前使用 Standard v2。若後續暴露於公網且涉及極機敏資料，建議評估開啟 WAF。
+3. **Log Analytics**: 建議開啟 Diagnostic Settings 將 ALB 日誌導向 Log Analytics 以利查核存取紀錄。
 
 ---
 *嘉鈊科技 (Gamma Technology) - 內部機密文件*

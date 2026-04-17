@@ -12,6 +12,17 @@
     "streamable-mcp-server": {
       "type": "http",
       "url": "http://127.0.0.1:12306/mcp"
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory@latest"],
+      "env": {
+        "MEMORY_FILE_PATH": "\\\\wsl.localhost\\Ubuntu\\home\\kent\\project\\Gamma-Employee-Handover-Documentation\\.gemini\\memory.json"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }

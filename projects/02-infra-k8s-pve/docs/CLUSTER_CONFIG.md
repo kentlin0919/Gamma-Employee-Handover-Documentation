@@ -12,6 +12,8 @@ graph TD
 
     subgraph K8s_Layer [Kubernetes Infrastructure]
         K8s_Node_1[K8s Node 01 <br/> IP: 10.0.5.27]
+        K8s_Node_2[K8s Node 02 <br/> Planned]
+        K8s_Node_3[K8s Node 03 <br/> Planned]
         K8s_Control[K8s Control Plane]
         MetalLB[MetalLB <br/> L2 Mode]
     end
@@ -39,6 +41,8 @@ graph TD
 
 ## 2. 叢集概況
 - **K8s Node 01**: `10.0.5.27`
+- **K8s Node 02**: `未來預計擴充節點 (Planned)`
+- **K8s Node 03**: `未來預計擴充節點 (Planned)`
 - **MetalLB (L2 Mode)**: 負責將 10.0.5.x 實體網段之 IP 分配給 Kubernetes 內部的 LoadBalancer Service，使服務能直接透過區域網路存取。
 - **ArgoCD**: `10.0.5.201` (由 MetalLB 分配)
 - **Caddy Proxy**: `10.0.5.202` (由 MetalLB 分配)
