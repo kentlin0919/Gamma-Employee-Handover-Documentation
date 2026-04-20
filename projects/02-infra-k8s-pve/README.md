@@ -17,7 +17,7 @@
 
 ### 3.2 K8s 管理
 - **叢集狀態**: `kubectl get nodes`
-- **服務部署**: 使用 Helm Chart 或 YAML 定義。
+- **服務部署**: 使用 ArgoCD 進行 GitOps 自動化管理 ([ArgoCD 操作手冊](file:///Users/kent/project/Gamma-Employee-Handover-Documentation/projects/02-infra-k8s-pve/docs/ARGOCD_OPERATIONS.md))。
 - **特定服務遷移**: 已完成 Caddy (Linux) 遷移並部署至 K8s。
 - **監控系統**: Prometheus + Grafana (URL: [填寫監控連結])。
 
