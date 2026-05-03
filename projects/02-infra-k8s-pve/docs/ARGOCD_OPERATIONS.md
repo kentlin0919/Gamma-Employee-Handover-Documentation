@@ -1,6 +1,6 @@
 # ArgoCD 操作維運手冊 (ARGOCD_OPERATIONS.md)
 
-本文件提供嘉鈊科技 K8s 叢集中 ArgoCD 的操作指引，涵蓋自動化佈署 (GitOps) 的核心邏輯與日常維運流程。
+本文件提供嘉鈊科技 K3s 叢集中 ArgoCD 的操作指引，涵蓋自動化佈署 (GitOps) 的核心邏輯與日常維運流程。
 
 ## 1. 系統概觀 (System Overview)
 
@@ -116,9 +116,46 @@ ArgoCD 是本專案的 GitOps 核心工具，負責監控 Git 儲存庫中的 YA
 
 ## 6. 常見故障排除 (Troubleshooting)
 
+### 6.1 基本排查
+
 1. **同步失敗時**: 優先檢查 **EVENTS** 分頁，查看是否為 `ImagePullBackOff` 或 `Insufficient memory`。
 2. **手動同步**: 若自動同步未開啟，點擊 `SYNC` -> `PRUNE` (刪除 Git 中已不存在的資源)。
 3. **強制更新**: 若 Pod 卡住，可嘗試手動刪除 Pod 讓 ArgoCD 自動重建。
+
+### 6.2 服務重啟指令 (官方推薦)
+
+```bash
+# 重啟 argocd-server (解決 401 驗證問題、配置變更後)
+kubectl rollout restart deployment argocd-server -n argocd
+
+# 重啟 repo-server (解決 CrashLoopBackOff、Volume 異常)
+kubectl rollout restart deployment argocd-repo-server -n argocd
+
+# 檢查所有 ArgoCD Pod 狀態
+kubectl get pods -n argocd
+```
+
+### 6.3 進階 HA 調校
+
+若 Application 數量較多，建議調整以下環境變數以避免 repo-server 負載過重：
+
+| 環境變數 | 說明 | 建議值 |
+|:---|:---|:---|
+| `ARGOCD_RECONCILIATION_JITTER` | 同步間隔隨機抖動（秒） | `60` (預設) |
+| `ARGOCD_GIT_ATTEMPTS_COUNT` | git ls-remote 重試次數 | `3` |
+
+> [!TIP]
+> **官方 HA 建議**: Jitter 可以分散 Application 刷新時機，避免重啟後所有 App 同時同步造成 repo-server 尖峰負載。
+> 例如：timeout 5分鐘 + jitter 1分鐘 = 實際同步間隔在 5~6 分鐘之間隨機分布。
+> — [來源: ArgoCD High Availability](https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability)
+
+---
+
+## 7. 相關文件
+
+- [K3s 已知問題](./K3S_KNOWN_ISSUES.md) — 包含 ArgoCD repo-server CrashLoopBackOff 的詳細分析
+- [重啟 SOP 手冊](./RESTART_SOP.md)
+- [叢集配置](./CLUSTER_CONFIG.md)
 
 ---
 

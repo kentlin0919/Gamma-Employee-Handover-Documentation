@@ -58,7 +58,7 @@
 * 若你是比對現有環境，先進入 `Virtual machines` 清單確認目前是否已經存在 `ap1`、`ap2`。
 * 若是要新增節點，請直接從同一個入口建立，避免從其他精靈入口帶入不一致預設值。
 
-**參考擷圖：進入 Azure Portal 搜尋服務**
+#### 參考擷圖：進入 Azure Portal 搜尋服務
 
 ![Azure Portal Navigation Reference](../../assets/azure-vm-cmua-step1-navigation-reference.png)
 
@@ -94,7 +94,7 @@
 5. **Administrator account** 依維運規範填寫。
 6. **Public inbound ports** 選 `None`。
 
-**參考擷圖：Basics**
+#### 參考擷圖：Basics
 
 ![Azure VM Basics Reference](../../assets/azure-vm-cmua-step2-basics-reference.png)
 
@@ -117,11 +117,11 @@
 3. 若應用程式需要額外資料碟，再於 **Data disks** 區塊新增磁碟。
 4. 若現場 `ap1` / `ap2` 沒有額外資料碟，就維持同樣做法，不要多加一顆新磁碟。
 
-**參考擷圖：切換到 Disks 分頁**
+#### 參考擷圖：切換到 Disks 分頁
 
 ![Azure VM Disks Tab Reference](../../assets/azure-vm-cmua-step3-disks-reference.png)
 
-**參考擷圖：新增資料磁碟**
+#### 參考擷圖：新增資料磁碟
 
 ![Azure VM Create Data Disk Reference](../../assets/azure-vm-cmua-step3-disks-create-data-disk-reference.png)
 
@@ -153,7 +153,7 @@
 5. 綁定對應 NSG，例如 `ap1` 綁 `ap1-nsg`、`ap2` 綁 `ap2-nsg`。
 6. 若 VM 需要放進既有流量架構，再確認是否需加入既有 Backend Pool 或由後續作業處理。
 
-**參考擷圖：Networking**
+#### 參考擷圖：Networking
 
 ![Azure VM Networking Reference](../../assets/azure-vm-cmua-step4-networking-reference.png)
 
@@ -192,7 +192,7 @@ Managed Identity 是這份流程的必要項目，因為：
 4. 先確認 **Boot diagnostics** 不要關閉。
 5. 其餘維持與既有 VM 相同的管理策略。
 
-**參考擷圖：Managed Identity**
+#### 參考擷圖：Managed Identity
 
 ![Azure VM Managed Identity Configuration](../../assets/azure-vm-cmua-step5-managed-identity-reference.png)
 
@@ -215,7 +215,7 @@ Managed Identity 是這份流程的必要項目，因為：
 2. 若畫面有 **Enable detailed monitoring**、**VM insights** 等選項，請依現有環境監控策略處理。
 3. 建立完成後，另外確認是否要補掛 Log Analytics / Azure Monitor Agent。
 
-**參考擷圖：Boot diagnostics**
+#### 參考擷圖：Boot diagnostics
 
 ![Azure VM Monitoring Reference](../../assets/azure-vm-cmua-step6-monitoring-reference.png)
 
@@ -234,7 +234,7 @@ Managed Identity 是這份流程的必要項目，因為：
 
 確認完成後再按 **`Create`**。
 
-**參考擷圖：Review + Create**
+#### 參考擷圖：Review + Create
 
 ![Azure VM Review Create Reference](../../assets/azure-vm-cmua-step7-review-create-reference.png)
 
